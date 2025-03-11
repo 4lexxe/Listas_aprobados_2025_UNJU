@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizador de PDF - Listas 2025</title>
+    <!-- URL canónica para SEO -->
+    <link rel="canonical" href="https://4lexxe.github.io/Listas_aprobados_2025_UNJU/">
+    <!-- Script para limpiar parámetros de URL -->
+    <script>
+        // Función para limpiar la URL de parámetros no deseados
+        (function() {
+            // Lista de parámetros que queremos eliminar
+            const removeParams = ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign'];
+            
+            if (window.location.search) {
+                const currentUrl = new URL(window.location.href);
+                let paramsRemoved = false;
+                
+                removeParams.forEach(param => {
+                    if (currentUrl.searchParams.has(param)) {
+                        currentUrl.searchParams.delete(param);
+                        paramsRemoved = true;
+                    }
+                });
+                
+                // Si se eliminaron parámetros, reemplazar la URL sin recargar la página
+                if (paramsRemoved) {
+                    window.history.replaceState({}, document.title, currentUrl.toString());
+                }
+            }
+        })();
+    </script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
