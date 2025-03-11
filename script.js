@@ -157,7 +157,10 @@ const queueRenderPage = (num) => {
 };
 
 // Iniciar la carga del PDF cuando se cargue la página
-window.addEventListener('load', loadPDF);
+window.addEventListener('load', () => {
+    loadPDF();
+    updateVisitCount();
+});
 
 // Función para procesar el texto y extraer los datos estructurados
 function processTextContent(text) {
@@ -399,3 +402,15 @@ document.getElementById('search-input').addEventListener('keypress', (e) => {
 
 document.getElementById('next-result').addEventListener('click', showNextResult);
 document.getElementById('prev-result').addEventListener('click', showPrevResult);
+
+// Contador de visitas
+async function updateVisitCount() {
+    try {
+        const response = await fetch('https://api.countapi.xyz/hit/listas2025-alexxe/visits');
+        const data = await response.json();
+        document.getElementById('visits').innerText = data.value.toLocaleString();
+    } catch (error) {
+        console.error('Error al actualizar el contador de visitas:', error);
+        document.getElementById('visits').innerText = 'Error';
+    }
+}
