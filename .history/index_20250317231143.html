@@ -1,12 +1,16 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Visualizador de PDF - Listas 2025</title>
+    <!-- URL canónica para SEO -->
     <link rel="canonical" href="https://4lexxe.github.io/Listas_aprobados_2025_UNJU/">
+    <!-- Script para limpiar parámetros de URL -->
     <script>
+        // Función para limpiar la URL de parámetros no deseados
         (function() {
+            // Lista de parámetros que queremos eliminar
             const removeParams = ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign'];
             
             if (window.location.search) {
@@ -20,16 +24,20 @@
                     }
                 });
                 
+                // Si se eliminaron parámetros, reemplazar la URL sin recargar la página
                 if (paramsRemoved) {
                     window.history.replaceState({}, document.title, currentUrl.toString());
                 }
             }
         })();
     </script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -38,130 +46,133 @@
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-4 sidebar p-3">
+                
                 <!-- Logo y créditos -->
-                <div class="text-center mb-4 border-2 border-black p-4 bg-white">
+                <div class="text-center mb-4">
                     <div class="d-flex justify-content-center align-items-center gap-3 mb-2">
-                        <img src="https://i.ibb.co/4Z2fhbq3/Logo-Project-1.png" alt="Logo DevsProject" class="img-fluid" style="max-width: 120px;">
+                        <img src="https://i.ibb.co/4Z2fhbq3/Logo-Project-1.png" alt="Logo DevsProject" class="img-fluid rounded" style="max-width: 120px;">
                         <img src="https://fi.unju.edu.ar/images/LOGOS-FI-UNJU/logo-fi-unju-gran-formato-vertical-3000x2746.png" 
                              alt="Logo FI-UNJu" 
-                             class="img-fluid logo-fi" 
+                             class="img-fluid rounded logo-fi" 
                              style="max-width: 120px;">
                     </div>
-                    <p class="mb-0 creator-text">
+                    <p class="text-white mb-0 creator-text">
                         <i class="bi bi-github"></i> Creado por Alexxe <i class="bi bi-cat"></i>
                     </p>
                 </div>
                 
-                <!-- Buscador -->
-                <div class="search-controls border-2 border-black p-4 mb-4 bg-white">
+                <!-- Agregando buscador -->
+                <div class="search-controls bg-white rounded p-3 mb-4">
                     <h5><i class="bi bi-search"></i> Buscador</h5>
                     <div class="mb-3">
-                        <input type="text" id="search-input" class="form-control border-2 border-black" placeholder="Buscar por apellido, nombre o DNI">
+                        <input type="text" id="search-input" class="form-control" placeholder="Buscar por apellido, nombre o DNI">
                     </div>
                     <div class="d-grid">
-                        <button id="search-button" class="btn btn-dark border-2 border-black">
+                        <button id="search-button" class="btn btn-primary">
                             <i class="bi bi-search"></i> Buscar
                         </button>
                     </div>
                     <div class="form-check mt-2">
-                        <input class="form-check-input border-2 border-black" type="checkbox" id="search-both-pdfs" checked>
+                        <input class="form-check-input" type="checkbox" id="search-both-pdfs" checked>
                         <label class="form-check-label" for="search-both-pdfs">
                             Buscar en ambos documentos
                         </label>
                     </div>
-                    <div class="mt-2 search-results border-2 border-black" id="search-results">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="mt-2 search-results" id="search-results">
+                        <div class="d-flex justify-content-between">
                             <small>Resultados: <span id="results-count">0</span></small>
                             <div>
-                                <button id="toggle-pdf-view" class="btn btn-sm btn-outline-dark border-2 border-black me-1" title="Mostrar/Ocultar PDF">
-                                    <i class="bi bi-eye-slash"></i>
-                                </button>
-                                <button id="prev-result" class="btn btn-sm btn-outline-dark border-2 border-black" disabled>
+                                <button id="prev-result" class="btn btn-sm btn-outline-secondary" disabled>
                                     <i class="bi bi-arrow-up"></i>
                                 </button>
-                                <button id="next-result" class="btn btn-sm btn-outline-dark border-2 border-black" disabled>
+                                <button id="next-result" class="btn btn-sm btn-outline-secondary" disabled>
                                     <i class="bi bi-arrow-down"></i>
                                 </button>
                             </div>
                         </div>
-                        <!-- Elimino el div contenedor y la clase table-responsive -->
-                        <table class="table table-bordered border-black" id="results-table-container" style="display: none;">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Apellido y Nombre</th>
-                                    <th>DNI</th>
-                                    <th>Localidad</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="results-table-body">
-                            </tbody>
-                        </table>
+                        <!-- Agregando tabla de resultados -->
+                        <div class="mt-3 table-responsive" id="results-table-container" style="display: none;">
+                            <table class="table table-striped table-bordered table-sm">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th class="numero-column">#</th>
+                                        <th>Apellido y Nombre</th>
+                                        <th>DNI</th>
+                                        <th>Localidad</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="results-table-body">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Controles PDF -->
-                <div class="pdf-controls border-2 border-black p-4 mb-4 bg-white">
+                <div class="pdf-controls bg-white rounded p-3 mb-4">
                     <h5><i class="bi bi-gear-fill"></i> Controles</h5>
                     <div class="d-grid gap-2">
-                        <button id="prev" class="btn btn-outline-dark border-2 border-black">
+                        <button id="prev" class="btn btn-outline-primary">
                             <i class="bi bi-arrow-left-circle"></i> Anterior
                         </button>
-                        <button id="next" class="btn btn-outline-dark border-2 border-black">
+                        <button id="next" class="btn btn-outline-primary">
                             <i class="bi bi-arrow-right-circle"></i> Siguiente
                         </button>
                         <div class="input-group mt-2">
-                            <span class="input-group-text border-2 border-black">Página</span>
-                            <input type="number" id="page_num" class="form-control border-2 border-black" value="1" min="1">
-                            <span class="input-group-text border-2 border-black">de <span id="page_count">0</span></span>
+                            <span class="input-group-text">Página</span>
+                            <input type="number" id="page_num" class="form-control" value="1" min="1">
+                            <span class="input-group-text">de <span id="page_count">0</span></span>
                         </div>
-                        <button id="zoomIn" class="btn btn-outline-dark border-2 border-black mt-2">
+                        <button id="zoomIn" class="btn btn-outline-secondary mt-2">
                             <i class="bi bi-zoom-in"></i> Acercar
                         </button>
-                        <button id="zoomOut" class="btn btn-outline-dark border-2 border-black">
+                        <button id="zoomOut" class="btn btn-outline-secondary">
                             <i class="bi bi-zoom-out"></i> Alejar
                         </button>
                     </div>
                 </div>
                 
-                <!-- Información -->
-                <div class="border-2 border-black p-4 mb-4 bg-white">
+                <!-- Reemplazo del selector por pestañas -->
+                <div class="bg-white rounded p-3 mb-4">
                     <h5><i class="bi bi-info-circle"></i> Información</h5>
+                    
+                    <!-- Pestañas de navegación -->
                     <ul class="nav nav-tabs mt-3" id="pdfTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active border-2 border-black" id="primera-tab" data-bs-toggle="tab" data-bs-target="#primera" 
+                            <button class="nav-link active" id="primera-tab" data-bs-toggle="tab" data-bs-target="#primera" 
                                     type="button" role="tab" aria-controls="primera" aria-selected="true" data-pdf="primera">
                                 Primer Examen
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link border-2 border-black" id="segunda-tab" data-bs-toggle="tab" data-bs-target="#segunda" 
+                            <button class="nav-link" id="segunda-tab" data-bs-toggle="tab" data-bs-target="#segunda" 
                                     type="button" role="tab" aria-controls="segunda" aria-selected="false" data-pdf="segunda">
-                                Segundo Examen
+                                Segundo Examen (Recuperatorio)
                             </button>
                         </li>
                     </ul>
+                    
+                    <!-- Contenido de las pestañas -->
                     <div class="tab-content pt-3" id="pdfTabsContent">
-                        <div class="tab-pane fade show active" id="primera" role="tabpanel">
+                        <div class="tab-pane fade show active" id="primera" role="tabpanel" aria-labelledby="primera-tab">
                             <p>Lista de aprobados del primer examen de matemática</p>
                             <p class="mb-0">Fecha: <strong>8-03-2025</strong></p>
                         </div>
-                        <div class="tab-pane fade" id="segunda" role="tabpanel">
+                        <div class="tab-pane fade" id="segunda" role="tabpanel" aria-labelledby="segunda-tab">
                             <p>Lista de aprobados del examen recuperatorio de matemática</p>
-                            <p class="mb-0">Fecha: <strong>14-03-2025</strong></p>
+                            <p class="mb-0">Fecha: <strong>Segunda fecha</strong></p>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Contador de visitas -->
-                <div class="border-2 border-black p-4 bg-white">
+                <div class="bg-white rounded p-3 mt-4">
                     <h5 class="text-center">
                         <i class="bi bi-eye"></i> Visitas
                     </h5>
                     <div class="d-flex justify-content-center align-items-center">
-                        <div class="visits-counter border-2 border-black">
-                            <img src="https://api.visitorbadge.io/api/visitors?path=listas2025-alexxe&label=visitas&labelColor=%23000000&countColor=%23808080&style=flat" 
+                        <div class="visits-counter">
+                            <img src="https://api.visitorbadge.io/api/visitors?path=listas2025-alexxe&label=visitas&labelColor=%23000000&countColor=%234287f5&style=flat" 
                                  alt="Contador de Visitas"
                                  class="visitor-badge">
                         </div>
@@ -171,13 +182,13 @@
             
             <!-- PDF Viewer -->
             <div class="col-md-8 pdf-container p-3">
-                <div class="pdf-header border-2 border-black p-4 mb-3 bg-white">
+                <div class="pdf-header bg-white p-3 rounded mb-3 d-flex justify-content-between align-items-center">
                     <h3><i class="bi bi-file-earmark-text"></i> <span id="header-title">Lista de aprobados de examen de matemática</span></h3>
                     <div class="search-status">
-                        <span id="search-status" class="badge border-2 border-black d-none">Buscando...</span>
+                        <span id="search-status" class="badge bg-secondary d-none">Buscando...</span>
                     </div>
                 </div>
-                <div class="pdf-viewer border-2 border-black p-4 bg-white">
+                <div class="pdf-viewer bg-white p-3 rounded">
                     <div id="search-layer"></div>
                     <canvas id="pdf-render"></canvas>
                 </div>
@@ -185,9 +196,12 @@
         </div>
     </div>
 
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
+        // Configurar el worker de PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
     </script>
     <script src="script.js"></script>

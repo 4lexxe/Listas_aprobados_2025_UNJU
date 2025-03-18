@@ -283,35 +283,6 @@ h3, h4, h5 {
   border-radius: 8px;
 }
 
-/* Modal styles */
-.modal-content {
-  border-radius: 12px;
-  overflow: hidden;
-  border-width: 2px !important;
-  border-color: #000 !important;
-  border-bottom-width: 4px !important;
-}
-
-.modal-header {
-  background-color: #e3eef3;
-  border-bottom: 2px solid #000;
-}
-
-.modal-footer {
-  border-top: 2px solid #000;
-  background-color: #f8fbfc;
-}
-
-.btn-close {
-  background-color: #000;
-  opacity: 0.7;
-  border-radius: 50%;
-}
-
-.btn-close:hover {
-  opacity: 1;
-}
-
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .sidebar {
@@ -359,71 +330,6 @@ h3, h4, h5 {
     white-space: normal;
     line-height: 1.3;
   }
-
-  /* Responsive tables for mobile */
-  .table thead {
-    display: none; /* Ocultar encabezados de tabla en móvil */
-  }
-  
-  .table, .table tbody, .table tr, .table td {
-    display: block;
-    width: 100%;
-  }
-  
-  .table tr {
-    margin-bottom: 15px;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid #000;
-    border-bottom-width: 4px;
-  }
-  
-  .table td {
-    /* Crear etiquetas para cada columna */
-    display: flex;
-    padding: 8px 10px;
-    text-align: right;
-    position: relative;
-    border: none;
-    border-bottom: 1px solid #000;
-  }
-  
-  .table td:last-child {
-    border-bottom: none;
-  }
-  
-  .table td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 10px;
-    width: 40%;
-    padding-right: 10px;
-    font-weight: 600;
-    text-align: left;
-  }
-  
-  /* Ajustes para el estado */
-  .table td[data-label="Estado"] {
-    font-weight: 600;
-    background-color: #e3eef3;
-  }
-
-  /* Ocultar la tabla en el sidebar y mostrar el botón de modal en su lugar */
-  .results-table-desktop {
-    display: none !important;
-  }
-  
-  #view-results-modal-btn {
-    display: inline-block !important;
-  }
-
-  .modal-dialog {
-    margin: 0.5rem;
-  }
-  
-  .modal-content {
-    border-radius: 8px;
-  }
 }
 
 @media (max-width: 576px) {
@@ -436,10 +342,6 @@ h3, h4, h5 {
     font-size: 0.8rem;
     padding: 5px 6px;
     width: 100%; /* En pantallas muy pequeñas, volver a una sola columna */
-  }
-
-  .modal-dialog {
-    margin: 0.25rem;
   }
 }
 

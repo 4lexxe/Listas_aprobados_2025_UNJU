@@ -236,27 +236,6 @@ window.addEventListener('load', () => {
             }
         });
     });
-    
-    // Configurar evento para alternar visibilidad del PDF
-    const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    if (togglePdfBtn) {
-        togglePdfBtn.addEventListener('click', function() {
-            const pdfContainer = document.querySelector('.pdf-container');
-            const pdfIcon = this.querySelector('i');
-            
-            if (document.body.classList.contains('pdf-hidden')) {
-                document.body.classList.remove('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye');
-                pdfIcon.classList.add('bi-eye-slash');
-                this.setAttribute('title', 'Ocultar PDF');
-            } else {
-                document.body.classList.add('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye-slash');
-                pdfIcon.classList.add('bi-eye');
-                this.setAttribute('title', 'Mostrar PDF');
-            }
-        });
-    }
 });
 
 // Función para procesar el texto y extraer los datos estructurados
@@ -369,7 +348,7 @@ function processTextContent(text, pdfKey) {
 
 // Función para actualizar la tabla de resultados
 function updateResultsTable(results) {
-    const tableElement = document.getElementById('results-table-container');
+    const tableContainer = document.getElementById('results-table-container');
     const tableBody = document.getElementById('results-table-body');
     const numeroColumn = document.querySelector('.numero-column');
     tableBody.innerHTML = '';
@@ -379,7 +358,7 @@ function updateResultsTable(results) {
         if (numeroColumn) numeroColumn.style.display = 'none';
         
         // Mostrar mensaje de "No aprobado o no registrado" en la tabla
-        tableElement.style.display = 'table';
+        tableContainer.style.display = 'block';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td colspan="5" class="text-center">
@@ -427,7 +406,7 @@ function updateResultsTable(results) {
         tableBody.appendChild(row);
     });
     
-    tableElement.style.display = 'table';
+    tableContainer.style.display = 'block';
 }
 
 // Función para buscar texto en el PDF
@@ -449,17 +428,6 @@ async function searchPDF(searchTerm) {
     document.getElementById('search-status').classList.remove('d-none');
     document.getElementById('search-status').textContent = 'Buscando...';
     document.getElementById('search-status').classList.add('searching');
-    
-    // Cuando hay una búsqueda activa, podemos ocultar automáticamente el PDF si hay resultados
-    // Este comportamiento es opcional, se puede comentar si no se desea
-    // document.body.classList.add('pdf-hidden');
-    // const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    // if (togglePdfBtn) {
-    //     const pdfIcon = togglePdfBtn.querySelector('i');
-    //     pdfIcon.classList.remove('bi-eye-slash');
-    //     pdfIcon.classList.add('bi-eye');
-    //     togglePdfBtn.setAttribute('title', 'Mostrar PDF');
-    // }
     
     try {
         let allResults = [];

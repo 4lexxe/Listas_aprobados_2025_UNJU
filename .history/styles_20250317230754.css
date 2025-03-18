@@ -1,0 +1,274 @@
+body {
+    background-color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+    background-color: #000000;
+    min-height: 100vh;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    padding: 1.5rem !important;
+}
+
+.pdf-container {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.pdf-viewer {
+    min-height: 70vh;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+canvas {
+    max-width: 100%;
+    height: auto;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-controls, .pdf-header, .search-controls, .extracted-data {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+#pdf-render {
+    margin: 0 auto;
+    display: block;
+}
+
+/* Estilos para la búsqueda */
+.search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.search-result-item {
+    padding: 5px 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+    background-color: #f0f8ff;
+}
+
+.search-result-item.active {
+    background-color: #e3f2fd;
+    border-left: 3px solid #0d6efd;
+}
+
+.highlight {
+    background-color: rgba(255, 235, 59, 0.5);
+    border-radius: 2px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.highlight.current {
+    background-color: rgba(255, 165, 0, 0.6);
+    border: 2px solid #ff6600;
+}
+
+#search-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.search-count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 0.7rem;
+}
+
+.search-controls, .pdf-controls {
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.table-responsive {
+    margin-top: 1rem;
+}
+
+.creator-text {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    padding: 10px;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
+    animation: glow 2s ease-in-out infinite;
+}
+
+.creator-text i {
+    margin: 0 5px;
+}
+
+.creator-text .bi-cat {
+    animation: float 3s ease-in-out infinite;
+    display: inline-block;
+}
+
+@keyframes glow {
+    0% { text-shadow: 0 0 5px rgba(0, 255, 0, 0.7); }
+    50% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.9); }
+    100% { text-shadow: 0 0 5px rgba(0, 255, 0, 0.7); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+.logo-fi {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.logo-fi:hover {
+    transform: scale(1.05);
+}
+
+.visits-counter {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.2rem;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    text-align: center;
+    min-width: 100px;
+    animation: counterglow 2s ease-in-out infinite;
+}
+
+@keyframes counterglow {
+    0% { box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 0 15px rgba(0, 0, 0, 0.4); }
+    100% { box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); }
+}
+
+.visitor-badge {
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.visitor-badge:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.3));
+}
+
+#pdf-selector {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+#pdf-selector:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+#pdf-info {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Estilos para las pestañas */
+.nav-tabs .nav-link {
+    font-size: 0.9rem;
+    color: #495057;
+    border-bottom: 0;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 600;
+    color: #0d6efd;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    background-color: #f8f9fa;
+    border-color: #e9ecef #e9ecef #dee2e6;
+}
+
+.tab-content {
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 0.25rem 0.25rem;
+}
+
+/* Estilos para resultados de búsqueda en múltiples PDFs */
+.table-info {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+.table-info:hover {
+    background-color: rgba(0, 123, 255, 0.2) !important;
+}
+
+.search-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#search-status {
+    transition: all 0.3s ease;
+    padding: 0.4rem 0.8rem;
+}
+
+#search-status.searching {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Estilo para indicar fuente del PDF en resultados */
+.pdf-source-indicator {
+    position: relative;
+    cursor: pointer;
+}
+
+.pdf-source-indicator .badge {
+    transition: all 0.3s;
+}
+
+.pdf-source-indicator:hover .badge {
+    transform: scale(1.1);
+}
+
+.search-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#search-status {
+    transition: all 0.3s ease;
+    padding: 0.4rem 0.8rem;
+}
+
+#search-status.searching {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}

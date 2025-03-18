@@ -236,27 +236,6 @@ window.addEventListener('load', () => {
             }
         });
     });
-    
-    // Configurar evento para alternar visibilidad del PDF
-    const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    if (togglePdfBtn) {
-        togglePdfBtn.addEventListener('click', function() {
-            const pdfContainer = document.querySelector('.pdf-container');
-            const pdfIcon = this.querySelector('i');
-            
-            if (document.body.classList.contains('pdf-hidden')) {
-                document.body.classList.remove('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye');
-                pdfIcon.classList.add('bi-eye-slash');
-                this.setAttribute('title', 'Ocultar PDF');
-            } else {
-                document.body.classList.add('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye-slash');
-                pdfIcon.classList.add('bi-eye');
-                this.setAttribute('title', 'Mostrar PDF');
-            }
-        });
-    }
 });
 
 // Función para procesar el texto y extraer los datos estructurados
@@ -369,29 +348,32 @@ function processTextContent(text, pdfKey) {
 
 // Función para actualizar la tabla de resultados
 function updateResultsTable(results) {
-    const tableElement = document.getElementById('results-table-container');
-    const tableBody = document.getElementById('results-table-body');
-    const numeroColumn = document.querySelector('.numero-column');
-    tableBody.innerHTML = '';
+    // Solo usar el modal para mostrar resultados
+    const modalTableBody = document.getElementById('modal-results-table-body');
+    
+    // Verificar que el elemento existe antes de manipularlo
+    if (modalTableBody) modalTableBody.innerHTML = '';
     
     if (results.length === 0) {
-        // Ocultar la columna de número cuando no hay resultados
-        if (numeroColumn) numeroColumn.style.display = 'none';
-        
-        // Mostrar mensaje de "No aprobado o no registrado" en la tabla
-        tableElement.style.display = 'table';
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td colspan="5" class="text-center">
-                <span class="badge bg-danger">No aprobado o no registrado</span>
-            </td>
+        // Mostrar mensaje de "No aprobado o no registrado" en el modal
+        const noResultRow = `
+            <tr>
+                <td colspan="5" class="text-center">
+                    <span class="badge bg-danger">No aprobado o no registrado</span>
+                </td>
+            </tr>
         `;
-        tableBody.appendChild(row);
+        
+        if (modalTableBody) modalTableBody.innerHTML = noResultRow;
+        
+        // Ocultar el botón de ver modal si no hay resultados
+        const viewModalBtn = document.getElementById('view-results-modal-btn');
+        if (viewModalBtn) {
+            viewModalBtn.disabled = true;
+        }
+        
         return;
     }
-    
-    // Mostrar la columna de número cuando hay resultados
-    if (numeroColumn) numeroColumn.style.display = '';
     
     // Ordenar resultados primero por documento y luego por número
     results.sort((a, b) => {
@@ -401,8 +383,10 @@ function updateResultsTable(results) {
         return parseInt(a.numero) - parseInt(b.numero);
     });
     
+    // Crear las filas para la tabla del modal
+    const rows = [];
+    
     results.forEach(result => {
-        const row = document.createElement('tr');
         const badgeClass = result.estado === 'Aprobado' ? 'bg-success' : 
                           result.estado === 'No podía rendir' ? 'bg-warning text-dark' : 'bg-danger';
         
@@ -410,24 +394,44 @@ function updateResultsTable(results) {
         const isCurrentPdf = result.sourcePdf === currentPdfSelection;
         const rowClass = isCurrentPdf ? '' : 'table-info';
         
-        row.className = rowClass;
-        row.innerHTML = `
-            <td class="text-center">${result.numero}</td>
-            <td>${result.nombreApellido}</td>
-            <td class="text-center">${result.dni}</td>
-            <td>${result.localidad}</td>
-            <td class="text-center">
-                <span class="badge ${badgeClass}">${result.estado}</span>
-                ${result.sourcePdf !== currentPdfSelection ? 
-                    `<span class="badge bg-info ms-1" title="Encontrado en: ${result.sourceName}">
-                        <i class="bi bi-file-earmark-pdf"></i>
-                    </span>` : ''}
-            </td>
+        const rowHTML = `
+            <tr class="${rowClass}">
+                <td class="text-center" data-label="#">${result.numero}</td>
+                <td data-label="Apellido y Nombre">${result.nombreApellido}</td>
+                <td class="text-center" data-label="DNI">${result.dni}</td>
+                <td data-label="Localidad">${result.localidad}</td>
+                <td class="text-center" data-label="Estado">
+                    <span class="badge ${badgeClass}">${result.estado}</span>
+                    ${result.sourcePdf !== currentPdfSelection ? 
+                        `<span class="badge bg-info ms-1" title="Encontrado en: ${result.sourceName}">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </span>` : ''}
+                </td>
+            </tr>
         `;
-        tableBody.appendChild(row);
+        
+        rows.push(rowHTML);
     });
     
-    tableElement.style.display = 'table';
+    // Actualizar la tabla del modal
+    if (modalTableBody) modalTableBody.innerHTML = rows.join('');
+    
+    // Habilitar el botón de ver modal si hay resultados
+    const viewModalBtn = document.getElementById('view-results-modal-btn');
+    if (viewModalBtn) {
+        viewModalBtn.disabled = false;
+    }
+
+    // Si hay resultados, mostrar automáticamente el modal
+    if (results.length > 0 && results.length <= 3) {
+        // Mostrar automáticamente el modal para pocos resultados
+        try {
+            const resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));
+            resultsModal.show();
+        } catch (error) {
+            console.error('Error al mostrar el modal:', error);
+        }
+    }
 }
 
 // Función para buscar texto en el PDF
@@ -449,17 +453,6 @@ async function searchPDF(searchTerm) {
     document.getElementById('search-status').classList.remove('d-none');
     document.getElementById('search-status').textContent = 'Buscando...';
     document.getElementById('search-status').classList.add('searching');
-    
-    // Cuando hay una búsqueda activa, podemos ocultar automáticamente el PDF si hay resultados
-    // Este comportamiento es opcional, se puede comentar si no se desea
-    // document.body.classList.add('pdf-hidden');
-    // const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    // if (togglePdfBtn) {
-    //     const pdfIcon = togglePdfBtn.querySelector('i');
-    //     pdfIcon.classList.remove('bi-eye-slash');
-    //     pdfIcon.classList.add('bi-eye');
-    //     togglePdfBtn.setAttribute('title', 'Mostrar PDF');
-    // }
     
     try {
         let allResults = [];
@@ -617,6 +610,21 @@ document.getElementById('search-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         const searchTerm = document.getElementById('search-input').value;
         searchPDF(searchTerm);
+    }
+});
+
+// Event listener para el botón de ver resultados en modal
+document.addEventListener('DOMContentLoaded', () => {
+    const viewModalBtn = document.getElementById('view-results-modal-btn');
+    if (viewModalBtn) {
+        viewModalBtn.addEventListener('click', () => {
+            try {
+                const resultsModal = new bootstrap.Modal(document.getElementById('resultsModal'));
+                resultsModal.show();
+            } catch (error) {
+                console.error('Error al mostrar el modal:', error);
+            }
+        });
     }
 });
 

@@ -25,7 +25,7 @@ const pdfInfo = {
     },
     segunda: {
         title: 'Lista de aprobados de examen de matemática - Recuperatorio',
-        date: 'Segunda fecha (14/03)'
+        date: 'Segunda fecha'
     }
 };
 
@@ -36,21 +36,6 @@ let currentPdfSelection = 'primera';
 function updatePdfInfo(selection) {
     const info = pdfInfo[selection];
     document.getElementById('header-title').textContent = info.title;
-    
-    // Verificar primero si los elementos existen antes de manipularlos
-    // Esto arregla el error: Cannot read properties of null (reading 'classList')
-    const tabPrimera = document.getElementById('primera-tab');
-    const tabSegunda = document.getElementById('segunda-tab');
-    
-    if (tabPrimera && tabSegunda) {
-        if (selection === 'primera') {
-            tabPrimera.classList.add('active');
-            tabSegunda.classList.remove('active');
-        } else {
-            tabPrimera.classList.remove('active');
-            tabSegunda.classList.add('active');
-        }
-    }
 }
 
 // Cargar PDF
@@ -211,17 +196,11 @@ window.addEventListener('load', () => {
     updateVisitCount();
     
     // Configurar evento para cambio de pestañas
-    const tabElements = document.querySelectorAll('#pdfTabs button[role="tab"]');
+    const tabElements = document.querySelectorAll('#pdfTabs button[data-bs-toggle="tab"]');
     tabElements.forEach(tab => {
-        tab.addEventListener('click', function (event) {
-            const pdfKey = this.getAttribute('data-pdf');
+        tab.addEventListener('shown.bs.tab', function (event) {
+            const pdfKey = event.target.getAttribute('data-pdf');
             if (pdfKey && currentPdfSelection !== pdfKey) {
-                // Actualizar clases de pestañas
-                document.querySelectorAll('#pdfTabs button').forEach(t => {
-                    t.classList.remove('active');
-                });
-                this.classList.add('active');
-                
                 loadPDF(pdfKey);
                 
                 // Resetear la búsqueda actual al cambiar de documento
@@ -236,38 +215,16 @@ window.addEventListener('load', () => {
             }
         });
     });
-    
-    // Configurar evento para alternar visibilidad del PDF
-    const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    if (togglePdfBtn) {
-        togglePdfBtn.addEventListener('click', function() {
-            const pdfContainer = document.querySelector('.pdf-container');
-            const pdfIcon = this.querySelector('i');
-            
-            if (document.body.classList.contains('pdf-hidden')) {
-                document.body.classList.remove('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye');
-                pdfIcon.classList.add('bi-eye-slash');
-                this.setAttribute('title', 'Ocultar PDF');
-            } else {
-                document.body.classList.add('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye-slash');
-                pdfIcon.classList.add('bi-eye');
-                this.setAttribute('title', 'Mostrar PDF');
-            }
-        });
-    }
 });
 
 // Función para procesar el texto y extraer los datos estructurados
-function processTextContent(text, pdfKey) {
+function processTextContent(text) {
     const lines = text.split('\n').map(line => line.trim()).filter(line => line);
     const results = [];
     let processingNoAsistencia = false;
     
     // Depuración
     console.log('Texto a procesar:', text);
-    console.log('PDF origen:', pdfKey);
     
     for (let line of lines) {
         line = line.trim();
@@ -282,72 +239,27 @@ function processTextContent(text, pdfKey) {
         if (line.includes('Apellido y Nombre') || 
             line.includes('Nro de DNI') || 
             line.startsWith('Alumnos que') ||
-            line.includes('Exámen de Matemática') ||
-            line.includes('Condición') ||
             line.length < 10) continue;
         
         console.log('Procesando línea:', line);
         
-        // Diferentes patrones según el documento
-        let match = null;
+        // Procesar alumnos aprobados
+        let match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{8})\s+(.*?)Aprobado/);
         
-        // Patrón para el primer PDF - alumnos aprobados
-        if (pdfKey === 'primera') {
-            match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{8})\s+(.*?)Aprobado/);
-            
-            if (match) {
-                const result = {
-                    numero: match[1],
-                    nombreApellido: match[2].trim(),
-                    dni: match[3],
-                    localidad: match[4].trim(),
-                    estado: 'Aprobado'
-                };
-                console.log('Resultado procesado (Aprobado):', result);
-                results.push(result);
-                continue;
-            }
-        } 
-        // Patrón para el segundo PDF - formato diferente
-        else if (pdfKey === 'segunda') {
-            // Intentar capturar el patrón específico del segundo PDF
-            // Patrón para líneas como: "1 Acosta, Jonas Imanol 45762439 San Pedro APROBADO"
-            match = line.match(/^(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{8})\s+(.*?)APROBADO$/);
-            
-            if (match) {
-                const result = {
-                    numero: match[1],
-                    nombreApellido: match[2].trim(),
-                    dni: match[3],
-                    localidad: match[4].trim(),
-                    estado: 'Aprobado'
-                };
-                console.log('Resultado procesado (APROBADO - segundo PDF):', result);
-                results.push(result);
-                continue;
-            }
+        if (match) {
+            const result = {
+                numero: match[1],
+                nombreApellido: match[2].trim(),
+                dni: match[3],
+                localidad: match[4].trim(),
+                estado: 'Aprobado'
+            };
+            console.log('Resultado procesado (Aprobado):', result);
+            results.push(result);
+            continue;
         }
         
-        // Patrón alternativo para casos donde hay problemas con el formato
-        if (!match) {
-            // Un patrón más flexible para detectar DNI de 8 dígitos y palabras como APROBADO/Aprobado
-            match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{7,8})\s+(.*?)(APROBADO|Aprobado)/i);
-            
-            if (match) {
-                const result = {
-                    numero: match[1],
-                    nombreApellido: match[2].trim(),
-                    dni: match[3],
-                    localidad: match[4].trim(),
-                    estado: 'Aprobado'
-                };
-                console.log('Resultado procesado (patrón alternativo):', result);
-                results.push(result);
-                continue;
-            }
-        }
-        
-        // Procesar alumnos que no podían rendir (solo en primer PDF)
+        // Procesar alumnos que no podían rendir
         if (processingNoAsistencia) {
             match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d+)/);
             if (match) {
@@ -369,7 +281,7 @@ function processTextContent(text, pdfKey) {
 
 // Función para actualizar la tabla de resultados
 function updateResultsTable(results) {
-    const tableElement = document.getElementById('results-table-container');
+    const tableContainer = document.getElementById('results-table-container');
     const tableBody = document.getElementById('results-table-body');
     const numeroColumn = document.querySelector('.numero-column');
     tableBody.innerHTML = '';
@@ -379,10 +291,10 @@ function updateResultsTable(results) {
         if (numeroColumn) numeroColumn.style.display = 'none';
         
         // Mostrar mensaje de "No aprobado o no registrado" en la tabla
-        tableElement.style.display = 'table';
+        tableContainer.style.display = 'block';
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td colspan="5" class="text-center">
+            <td colspan="4" class="text-center">
                 <span class="badge bg-danger">No aprobado o no registrado</span>
             </td>
         `;
@@ -393,41 +305,25 @@ function updateResultsTable(results) {
     // Mostrar la columna de número cuando hay resultados
     if (numeroColumn) numeroColumn.style.display = '';
     
-    // Ordenar resultados primero por documento y luego por número
-    results.sort((a, b) => {
-        if (a.sourcePdf !== b.sourcePdf) {
-            return a.sourcePdf === 'primera' ? -1 : 1;
-        }
-        return parseInt(a.numero) - parseInt(b.numero);
-    });
+    // Ordenar resultados por número
+    results.sort((a, b) => parseInt(a.numero) - parseInt(b.numero));
     
     results.forEach(result => {
         const row = document.createElement('tr');
         const badgeClass = result.estado === 'Aprobado' ? 'bg-success' : 
                           result.estado === 'No podía rendir' ? 'bg-warning text-dark' : 'bg-danger';
         
-        // Determinar si el resultado es del documento actual o del otro
-        const isCurrentPdf = result.sourcePdf === currentPdfSelection;
-        const rowClass = isCurrentPdf ? '' : 'table-info';
-        
-        row.className = rowClass;
         row.innerHTML = `
             <td class="text-center">${result.numero}</td>
             <td>${result.nombreApellido}</td>
             <td class="text-center">${result.dni}</td>
             <td>${result.localidad}</td>
-            <td class="text-center">
-                <span class="badge ${badgeClass}">${result.estado}</span>
-                ${result.sourcePdf !== currentPdfSelection ? 
-                    `<span class="badge bg-info ms-1" title="Encontrado en: ${result.sourceName}">
-                        <i class="bi bi-file-earmark-pdf"></i>
-                    </span>` : ''}
-            </td>
+            <td class="text-center"><span class="badge ${badgeClass}">${result.estado}</span></td>
         `;
         tableBody.appendChild(row);
     });
     
-    tableElement.style.display = 'table';
+    tableContainer.style.display = 'block';
 }
 
 // Función para buscar texto en el PDF
@@ -447,103 +343,64 @@ async function searchPDF(searchTerm) {
     }
     
     document.getElementById('search-status').classList.remove('d-none');
-    document.getElementById('search-status').textContent = 'Buscando...';
-    document.getElementById('search-status').classList.add('searching');
-    
-    // Cuando hay una búsqueda activa, podemos ocultar automáticamente el PDF si hay resultados
-    // Este comportamiento es opcional, se puede comentar si no se desea
-    // document.body.classList.add('pdf-hidden');
-    // const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    // if (togglePdfBtn) {
-    //     const pdfIcon = togglePdfBtn.querySelector('i');
-    //     pdfIcon.classList.remove('bi-eye-slash');
-    //     pdfIcon.classList.add('bi-eye');
-    //     togglePdfBtn.setAttribute('title', 'Mostrar PDF');
-    // }
     
     try {
         let allResults = [];
-        // Verificar si el checkbox existe antes de leer su propiedad
-        // Esto arregla el error: Cannot read properties of null (reading 'checked')
-        const searchBothCheckbox = document.getElementById('search-both-pdfs');
-        const searchInBoth = searchBothCheckbox ? searchBothCheckbox.checked : true;
         
-        // Si se busca en ambos documentos o solo en el actual
-        const pdfKeysToSearch = searchInBoth ? ['primera', 'segunda'] : [currentPdfSelection];
-        
-        for (const pdfKey of pdfKeysToSearch) {
-            // Cargar el PDF si no es el actual
-            let tempPdfDoc;
-            if (pdfKey === currentPdfSelection) {
-                tempPdfDoc = pdfDoc;
-            } else {
-                document.getElementById('search-status').textContent = `Buscando en ${pdfInfo[pdfKey].title}...`;
-                const pdfPath = pdfFiles[pdfKey];
-                const loadingTask = pdfjsLib.getDocument(pdfPath);
-                tempPdfDoc = await loadingTask.promise;
+        for (let pageIndex = 1; pageIndex <= pdfDoc.numPages; pageIndex++) {
+            const page = await pdfDoc.getPage(pageIndex);
+            const textContent = await page.getTextContent();
+            
+            // Mejorar la extracción del texto preservando el formato de tabla
+            let text = '';
+            let lastY;
+            let currentLine = '';
+            
+            // Ordenar los items por posición Y y luego X
+            const sortedItems = textContent.items.sort((a, b) => {
+                if (Math.abs(a.transform[5] - b.transform[5]) < 5) {
+                    return a.transform[4] - b.transform[4];
+                }
+                return b.transform[5] - a.transform[5];
+            });
+            
+            // Construir el texto preservando el formato de tabla
+            for (let i = 0; i < sortedItems.length; i++) {
+                const item = sortedItems[i];
+                if (lastY && Math.abs(lastY - item.transform[5]) > 5) {
+                    text += currentLine.trim() + '\n';
+                    currentLine = '';
+                }
+                if (currentLine && !currentLine.endsWith(' ')) {
+                    currentLine += ' ';
+                }
+                currentLine += item.str;
+                lastY = item.transform[5];
+            }
+            if (currentLine) {
+                text += currentLine.trim();
             }
             
-            // Realizar la búsqueda en el PDF
-            for (let pageIndex = 1; pageIndex <= tempPdfDoc.numPages; pageIndex++) {
-                const page = await tempPdfDoc.getPage(pageIndex);
-                const textContent = await page.getTextContent();
-                
-                // Mejorar la extracción del texto preservando el formato de tabla
-                let text = '';
-                let lastY;
-                let currentLine = '';
-                
-                // Ordenar los items por posición Y y luego X
-                const sortedItems = textContent.items.sort((a, b) => {
-                    if (Math.abs(a.transform[5] - b.transform[5]) < 5) {
-                        return a.transform[4] - b.transform[4];
-                    }
-                    return b.transform[5] - a.transform[5];
+            console.log('Texto extraído de la página:', text);
+            
+            // Procesar el texto para obtener datos estructurados
+            const processedResults = processTextContent(text);
+            console.log('Resultados procesados:', processedResults);
+            
+            // Filtrar resultados según el término de búsqueda
+            const filteredResults = processedResults.filter(result => {
+                const searchTermLower = searchTerm.toLowerCase();
+                return result.nombreApellido.toLowerCase().includes(searchTermLower) ||
+                       result.dni.includes(searchTerm) ||
+                       result.localidad.toLowerCase().includes(searchTermLower);
+            });
+            
+            if (filteredResults.length > 0) {
+                allResults = [...allResults, ...filteredResults];
+                searchResults.push({
+                    page: pageIndex,
+                    text: text
                 });
-                
-                // Construir el texto preservando el formato de tabla
-                for (let i = 0; i < sortedItems.length; i++) {
-                    const item = sortedItems[i];
-                    if (lastY && Math.abs(lastY - item.transform[5]) > 5) {
-                        text += currentLine.trim() + '\n';
-                        currentLine = '';
-                    }
-                    if (currentLine && !currentLine.endsWith(' ')) {
-                        currentLine += ' ';
-                    }
-                    currentLine += item.str;
-                    lastY = item.transform[5];
-                }
-                if (currentLine) {
-                    text += currentLine.trim();
-                }
-                
-                // Procesar el texto para obtener datos estructurados
-                const processedResults = processTextContent(text, pdfKey);
-                
-                // Filtrar resultados según el término de búsqueda
-                const filteredResults = processedResults.filter(result => {
-                    const searchTermLower = searchTerm.toLowerCase();
-                    return result.nombreApellido.toLowerCase().includes(searchTermLower) ||
-                           result.dni.includes(searchTerm) ||
-                           (result.localidad && result.localidad.toLowerCase().includes(searchTermLower));
-                });
-                
-                // Añadir información del PDF donde se encontró
-                const resultsWithSource = filteredResults.map(result => ({
-                    ...result,
-                    sourcePdf: pdfKey,
-                    sourceName: pdfInfo[pdfKey].title
-                }));
-                
-                if (filteredResults.length > 0) {
-                    allResults = [...allResults, ...resultsWithSource];
-                    searchResults.push({
-                        page: pageIndex,
-                        text: text,
-                        pdfKey: pdfKey
-                    });
-                }
             }
         }
         
@@ -558,15 +415,11 @@ async function searchPDF(searchTerm) {
         } else {
             queueRenderPage(pageNum);
         }
-        
-        return allResults;
     } catch (error) {
         console.error('Error en la búsqueda:', error);
-        return [];
-    } finally {
-        document.getElementById('search-status').classList.remove('searching');
-        document.getElementById('search-status').classList.add('d-none');
     }
+    
+    document.getElementById('search-status').classList.add('d-none');
 }
 
 // Función para mostrar el siguiente resultado
@@ -575,17 +428,8 @@ function showNextResult() {
     
     currentResultIndex = (currentResultIndex + 1) % searchResults.length;
     const result = searchResults[currentResultIndex];
-    
-    // Verificar si el resultado está en otro PDF
-    if (result.pdfKey && result.pdfKey !== currentPdfSelection) {
-        loadPDF(result.pdfKey).then(() => {
-            pageNum = result.page;
-            queueRenderPage(pageNum);
-        });
-    } else {
-        pageNum = result.page;
-        queueRenderPage(pageNum);
-    }
+    pageNum = result.page;
+    queueRenderPage(pageNum);
 }
 
 // Función para mostrar el resultado anterior
@@ -594,17 +438,8 @@ function showPrevResult() {
     
     currentResultIndex = (currentResultIndex - 1 + searchResults.length) % searchResults.length;
     const result = searchResults[currentResultIndex];
-    
-    // Verificar si el resultado está en otro PDF
-    if (result.pdfKey && result.pdfKey !== currentPdfSelection) {
-        loadPDF(result.pdfKey).then(() => {
-            pageNum = result.page;
-            queueRenderPage(pageNum);
-        });
-    } else {
-        pageNum = result.page;
-        queueRenderPage(pageNum);
-    }
+    pageNum = result.page;
+    queueRenderPage(pageNum);
 }
 
 // Agregar event listeners para la búsqueda
@@ -619,6 +454,9 @@ document.getElementById('search-input').addEventListener('keypress', (e) => {
         searchPDF(searchTerm);
     }
 });
+
+document.getElementById('next-result').addEventListener('click', showNextResult);
+document.getElementById('prev-result').addEventListener('click', showPrevResult);
 
 // Contador de visitas
 async function updateVisitCount() {

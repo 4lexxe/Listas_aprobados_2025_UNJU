@@ -35,21 +35,24 @@ let currentPdfSelection = 'primera';
 // Actualizar información del PDF en la interfaz
 function updatePdfInfo(selection) {
     const info = pdfInfo[selection];
-    document.getElementById('header-title').textContent = info.title;
     
-    // Verificar primero si los elementos existen antes de manipularlos
-    // Esto arregla el error: Cannot read properties of null (reading 'classList')
-    const tabPrimera = document.getElementById('primera-tab');
-    const tabSegunda = document.getElementById('segunda-tab');
+    // Solución para el error de classList:
+    // Comprobar que header-title existe antes de manipularlo
+    const headerTitle = document.getElementById('header-title');
+    if (headerTitle) {
+        headerTitle.textContent = info.title;
+    }
     
-    if (tabPrimera && tabSegunda) {
-        if (selection === 'primera') {
-            tabPrimera.classList.add('active');
-            tabSegunda.classList.remove('active');
-        } else {
-            tabPrimera.classList.remove('active');
-            tabSegunda.classList.add('active');
+    // No usamos los IDs de las pestañas directamente ya que no siempre existen
+    try {
+        // Usar Bootstrap Tab API para activar la pestaña correcta si está disponible
+        const tab = document.querySelector(`#pdfTabs [data-pdf="${selection}"]`);
+        if (tab && window.bootstrap && bootstrap.Tab) {
+            const bsTab = new bootstrap.Tab(tab);
+            bsTab.show();
         }
+    } catch (e) {
+        console.log("Error al cambiar pestañas: ", e);
     }
 }
 
@@ -65,7 +68,10 @@ const loadPDF = async (pdfKey = currentPdfSelection) => {
         pdfDoc = await loadingTask.promise;
         
         // Actualizar número total de páginas
-        document.getElementById('page_count').textContent = pdfDoc.numPages;
+        const pageCountElement = document.getElementById('page_count');
+        if (pageCountElement) {
+            pageCountElement.textContent = pdfDoc.numPages;
+        }
         
         // Resetear página a la primera al cambiar de documento
         pageNum = 1;
@@ -207,55 +213,45 @@ const queueRenderPage = (num) => {
 
 // Iniciar la carga del PDF cuando se cargue la página
 window.addEventListener('load', () => {
-    loadPDF();
-    updateVisitCount();
-    
-    // Configurar evento para cambio de pestañas
-    const tabElements = document.querySelectorAll('#pdfTabs button[role="tab"]');
-    tabElements.forEach(tab => {
-        tab.addEventListener('click', function (event) {
-            const pdfKey = this.getAttribute('data-pdf');
-            if (pdfKey && currentPdfSelection !== pdfKey) {
-                // Actualizar clases de pestañas
-                document.querySelectorAll('#pdfTabs button').forEach(t => {
-                    t.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                loadPDF(pdfKey);
-                
-                // Resetear la búsqueda actual al cambiar de documento
-                searchResults = [];
-                currentResultIndex = -1;
-                currentSearchTerm = '';
-                document.getElementById('search-input').value = '';
-                document.getElementById('results-count').textContent = '0';
-                document.getElementById('prev-result').disabled = true;
-                document.getElementById('next-result').disabled = true;
-                document.getElementById('results-table-container').style.display = 'none';
-            }
+    // Inicializar el PDF con un try-catch para manejar errores
+    try {
+        loadPDF();
+        updateVisitCount();
+        
+        // Configurar evento para cambio de pestañas
+        const tabElements = document.querySelectorAll('#pdfTabs button[role="tab"]');
+        tabElements.forEach(tab => {
+            tab.addEventListener('click', function (event) {
+                const pdfKey = this.getAttribute('data-pdf');
+                if (pdfKey && currentPdfSelection !== pdfKey) {
+                    try {
+                        // Actualizar clases de pestañas (lo manejamos en updatePdfInfo)
+                        loadPDF(pdfKey);
+                        
+                        // Resetear la búsqueda actual al cambiar de documento
+                        searchResults = [];
+                        currentResultIndex = -1;
+                        currentSearchTerm = '';
+                        
+                        const searchInput = document.getElementById('search-input');
+                        const resultsCount = document.getElementById('results-count');
+                        const prevResult = document.getElementById('prev-result');
+                        const nextResult = document.getElementById('next-result');
+                        const resultsTable = document.getElementById('results-table-container');
+                        
+                        if (searchInput) searchInput.value = '';
+                        if (resultsCount) resultsCount.textContent = '0';
+                        if (prevResult) prevResult.disabled = true;
+                        if (nextResult) nextResult.disabled = true;
+                        if (resultsTable) resultsTable.style.display = 'none';
+                    } catch (e) {
+                        console.error("Error al cambiar de PDF:", e);
+                    }
+                }
+            });
         });
-    });
-    
-    // Configurar evento para alternar visibilidad del PDF
-    const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    if (togglePdfBtn) {
-        togglePdfBtn.addEventListener('click', function() {
-            const pdfContainer = document.querySelector('.pdf-container');
-            const pdfIcon = this.querySelector('i');
-            
-            if (document.body.classList.contains('pdf-hidden')) {
-                document.body.classList.remove('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye');
-                pdfIcon.classList.add('bi-eye-slash');
-                this.setAttribute('title', 'Ocultar PDF');
-            } else {
-                document.body.classList.add('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye-slash');
-                pdfIcon.classList.add('bi-eye');
-                this.setAttribute('title', 'Mostrar PDF');
-            }
-        });
+    } catch (e) {
+        console.error("Error al inicializar la aplicación:", e);
     }
 });
 
@@ -369,7 +365,7 @@ function processTextContent(text, pdfKey) {
 
 // Función para actualizar la tabla de resultados
 function updateResultsTable(results) {
-    const tableElement = document.getElementById('results-table-container');
+    const tableContainer = document.getElementById('results-table-container');
     const tableBody = document.getElementById('results-table-body');
     const numeroColumn = document.querySelector('.numero-column');
     tableBody.innerHTML = '';
@@ -379,7 +375,7 @@ function updateResultsTable(results) {
         if (numeroColumn) numeroColumn.style.display = 'none';
         
         // Mostrar mensaje de "No aprobado o no registrado" en la tabla
-        tableElement.style.display = 'table';
+        tableContainer.style.display = 'block';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td colspan="5" class="text-center">
@@ -427,7 +423,7 @@ function updateResultsTable(results) {
         tableBody.appendChild(row);
     });
     
-    tableElement.style.display = 'table';
+    tableContainer.style.display = 'block';
 }
 
 // Función para buscar texto en el PDF
@@ -435,9 +431,17 @@ async function searchPDF(searchTerm) {
     searchResults = [];
     currentResultIndex = -1;
     currentSearchTerm = searchTerm;
-    document.getElementById('results-count').textContent = '0';
-    document.getElementById('prev-result').disabled = true;
-    document.getElementById('next-result').disabled = false;
+    
+    const resultsCount = document.getElementById('results-count');
+    if (resultsCount) {
+        resultsCount.textContent = '0';
+    }
+    
+    const prevButton = document.getElementById('prev-result');
+    const nextButton = document.getElementById('next-result');
+    
+    if (prevButton) prevButton.disabled = true;
+    if (nextButton) nextButton.disabled = false;
     
     if (!searchTerm.trim()) {
         currentSearchTerm = '';
@@ -446,25 +450,15 @@ async function searchPDF(searchTerm) {
         return;
     }
     
-    document.getElementById('search-status').classList.remove('d-none');
-    document.getElementById('search-status').textContent = 'Buscando...';
-    document.getElementById('search-status').classList.add('searching');
-    
-    // Cuando hay una búsqueda activa, podemos ocultar automáticamente el PDF si hay resultados
-    // Este comportamiento es opcional, se puede comentar si no se desea
-    // document.body.classList.add('pdf-hidden');
-    // const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    // if (togglePdfBtn) {
-    //     const pdfIcon = togglePdfBtn.querySelector('i');
-    //     pdfIcon.classList.remove('bi-eye-slash');
-    //     pdfIcon.classList.add('bi-eye');
-    //     togglePdfBtn.setAttribute('title', 'Mostrar PDF');
-    // }
+    const searchStatus = document.getElementById('search-status');
+    if (searchStatus) {
+        searchStatus.classList.remove('d-none');
+        searchStatus.textContent = 'Buscando...';
+        searchStatus.classList.add('searching');
+    }
     
     try {
         let allResults = [];
-        // Verificar si el checkbox existe antes de leer su propiedad
-        // Esto arregla el error: Cannot read properties of null (reading 'checked')
         const searchBothCheckbox = document.getElementById('search-both-pdfs');
         const searchInBoth = searchBothCheckbox ? searchBothCheckbox.checked : true;
         
@@ -474,86 +468,102 @@ async function searchPDF(searchTerm) {
         for (const pdfKey of pdfKeysToSearch) {
             // Cargar el PDF si no es el actual
             let tempPdfDoc;
-            if (pdfKey === currentPdfSelection) {
-                tempPdfDoc = pdfDoc;
-            } else {
-                document.getElementById('search-status').textContent = `Buscando en ${pdfInfo[pdfKey].title}...`;
-                const pdfPath = pdfFiles[pdfKey];
-                const loadingTask = pdfjsLib.getDocument(pdfPath);
-                tempPdfDoc = await loadingTask.promise;
-            }
             
-            // Realizar la búsqueda en el PDF
-            for (let pageIndex = 1; pageIndex <= tempPdfDoc.numPages; pageIndex++) {
-                const page = await tempPdfDoc.getPage(pageIndex);
-                const textContent = await page.getTextContent();
-                
-                // Mejorar la extracción del texto preservando el formato de tabla
-                let text = '';
-                let lastY;
-                let currentLine = '';
-                
-                // Ordenar los items por posición Y y luego X
-                const sortedItems = textContent.items.sort((a, b) => {
-                    if (Math.abs(a.transform[5] - b.transform[5]) < 5) {
-                        return a.transform[4] - b.transform[4];
+            try {
+                if (pdfKey === currentPdfSelection) {
+                    tempPdfDoc = pdfDoc;
+                } else {
+                    if (searchStatus) {
+                        searchStatus.textContent = `Buscando en ${pdfInfo[pdfKey].title}...`;
                     }
-                    return b.transform[5] - a.transform[5];
-                });
-                
-                // Construir el texto preservando el formato de tabla
-                for (let i = 0; i < sortedItems.length; i++) {
-                    const item = sortedItems[i];
-                    if (lastY && Math.abs(lastY - item.transform[5]) > 5) {
-                        text += currentLine.trim() + '\n';
-                        currentLine = '';
-                    }
-                    if (currentLine && !currentLine.endsWith(' ')) {
-                        currentLine += ' ';
-                    }
-                    currentLine += item.str;
-                    lastY = item.transform[5];
-                }
-                if (currentLine) {
-                    text += currentLine.trim();
+                    const pdfPath = pdfFiles[pdfKey];
+                    const loadingTask = pdfjsLib.getDocument(pdfPath);
+                    tempPdfDoc = await loadingTask.promise;
                 }
                 
-                // Procesar el texto para obtener datos estructurados
-                const processedResults = processTextContent(text, pdfKey);
+                // Verificar que el PDF se haya cargado correctamente
+                if (!tempPdfDoc) {
+                    console.error(`El PDF ${pdfKey} no se cargó correctamente`);
+                    continue;
+                }
                 
-                // Filtrar resultados según el término de búsqueda
-                const filteredResults = processedResults.filter(result => {
-                    const searchTermLower = searchTerm.toLowerCase();
-                    return result.nombreApellido.toLowerCase().includes(searchTermLower) ||
-                           result.dni.includes(searchTerm) ||
-                           (result.localidad && result.localidad.toLowerCase().includes(searchTermLower));
-                });
-                
-                // Añadir información del PDF donde se encontró
-                const resultsWithSource = filteredResults.map(result => ({
-                    ...result,
-                    sourcePdf: pdfKey,
-                    sourceName: pdfInfo[pdfKey].title
-                }));
-                
-                if (filteredResults.length > 0) {
-                    allResults = [...allResults, ...resultsWithSource];
-                    searchResults.push({
-                        page: pageIndex,
-                        text: text,
-                        pdfKey: pdfKey
+                // Realizar la búsqueda en el PDF
+                for (let pageIndex = 1; pageIndex <= tempPdfDoc.numPages; pageIndex++) {
+                    const page = await tempPdfDoc.getPage(pageIndex);
+                    const textContent = await page.getTextContent();
+                    
+                    // Mejorar la extracción del texto preservando el formato de tabla
+                    let text = '';
+                    let lastY;
+                    let currentLine = '';
+                    
+                    // Ordenar los items por posición Y y luego X
+                    const sortedItems = textContent.items.sort((a, b) => {
+                        if (Math.abs(a.transform[5] - b.transform[5]) < 5) {
+                            return a.transform[4] - b.transform[4];
+                        }
+                        return b.transform[5] - a.transform[5];
                     });
+                    
+                    // Construir el texto preservando el formato de tabla
+                    for (let i = 0; i < sortedItems.length; i++) {
+                        const item = sortedItems[i];
+                        if (lastY && Math.abs(lastY - item.transform[5]) > 5) {
+                            text += currentLine.trim() + '\n';
+                            currentLine = '';
+                        }
+                        if (currentLine && !currentLine.endsWith(' ')) {
+                            currentLine += ' ';
+                        }
+                        currentLine += item.str;
+                        lastY = item.transform[5];
+                    }
+                    if (currentLine) {
+                        text += currentLine.trim();
+                    }
+                    
+                    // Procesar el texto para obtener datos estructurados
+                    const processedResults = processTextContent(text, pdfKey);
+                    
+                    // Filtrar resultados según el término de búsqueda
+                    const filteredResults = processedResults.filter(result => {
+                        const searchTermLower = searchTerm.toLowerCase();
+                        return result.nombreApellido.toLowerCase().includes(searchTermLower) ||
+                               result.dni.includes(searchTerm) ||
+                               (result.localidad && result.localidad.toLowerCase().includes(searchTermLower));
+                    });
+                    
+                    // Añadir información del PDF donde se encontró
+                    const resultsWithSource = filteredResults.map(result => ({
+                        ...result,
+                        sourcePdf: pdfKey,
+                        sourceName: pdfInfo[pdfKey].title
+                    }));
+                    
+                    if (filteredResults.length > 0) {
+                        allResults = [...allResults, ...resultsWithSource];
+                        searchResults.push({
+                            page: pageIndex,
+                            text: text,
+                            pdfKey: pdfKey
+                        });
+                    }
                 }
+            } catch (pdfError) {
+                console.error(`Error al procesar el PDF ${pdfKey}:`, pdfError);
             }
         }
         
         console.log('Resultados totales encontrados:', allResults);
-        document.getElementById('results-count').textContent = allResults.length;
+        if (resultsCount) {
+            resultsCount.textContent = allResults.length;
+        }
+        
         updateResultsTable(allResults);
         
         if (searchResults.length > 0) {
-            document.getElementById('prev-result').disabled = false;
-            document.getElementById('next-result').disabled = false;
+            if (prevButton) prevButton.disabled = false;
+            if (nextButton) nextButton.disabled = false;
             showNextResult();
         } else {
             queueRenderPage(pageNum);
@@ -564,8 +574,10 @@ async function searchPDF(searchTerm) {
         console.error('Error en la búsqueda:', error);
         return [];
     } finally {
-        document.getElementById('search-status').classList.remove('searching');
-        document.getElementById('search-status').classList.add('d-none');
+        if (searchStatus) {
+            searchStatus.classList.remove('searching');
+            searchStatus.classList.add('d-none');
+        }
     }
 }
 

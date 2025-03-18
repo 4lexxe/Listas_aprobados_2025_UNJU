@@ -70,34 +70,21 @@
                         </label>
                     </div>
                     <div class="mt-2 search-results border-2 border-black" id="search-results">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
                             <small>Resultados: <span id="results-count">0</span></small>
                             <div>
-                                <button id="toggle-pdf-view" class="btn btn-sm btn-outline-dark border-2 border-black me-1" title="Mostrar/Ocultar PDF">
-                                    <i class="bi bi-eye-slash"></i>
-                                </button>
                                 <button id="prev-result" class="btn btn-sm btn-outline-dark border-2 border-black" disabled>
                                     <i class="bi bi-arrow-up"></i>
                                 </button>
                                 <button id="next-result" class="btn btn-sm btn-outline-dark border-2 border-black" disabled>
                                     <i class="bi bi-arrow-down"></i>
                                 </button>
+                                <!-- Botón para abrir el modal de resultados -->
+                                <button id="view-results-modal-btn" class="btn btn-sm btn-outline-dark border-2 border-black ms-1">
+                                    <i class="bi bi-eye"></i> Ver
+                                </button>
                             </div>
                         </div>
-                        <!-- Elimino el div contenedor y la clase table-responsive -->
-                        <table class="table table-bordered border-black" id="results-table-container" style="display: none;">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Apellido y Nombre</th>
-                                    <th>DNI</th>
-                                    <th>Localidad</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="results-table-body">
-                            </tbody>
-                        </table>
                     </div>
                 </div>
                 
@@ -180,6 +167,39 @@
                 <div class="pdf-viewer border-2 border-black p-4 bg-white">
                     <div id="search-layer"></div>
                     <canvas id="pdf-render"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para resultados -->
+    <div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-2 border-black">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultsModalLabel">Resultados de búsqueda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered border-black">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Apellido y Nombre</th>
+                                    <th>DNI</th>
+                                    <th>Localidad</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-results-table-body">
+                                <!-- Los resultados se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark border-2 border-black" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>

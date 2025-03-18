@@ -287,9 +287,6 @@ h3, h4, h5 {
 .modal-content {
   border-radius: 12px;
   overflow: hidden;
-  border-width: 2px !important;
-  border-color: #000 !important;
-  border-bottom-width: 4px !important;
 }
 
 .modal-header {
@@ -299,13 +296,11 @@ h3, h4, h5 {
 
 .modal-footer {
   border-top: 2px solid #000;
-  background-color: #f8fbfc;
 }
 
 .btn-close {
   background-color: #000;
   opacity: 0.7;
-  border-radius: 50%;
 }
 
 .btn-close:hover {
@@ -416,14 +411,6 @@ h3, h4, h5 {
   #view-results-modal-btn {
     display: inline-block !important;
   }
-
-  .modal-dialog {
-    margin: 0.5rem;
-  }
-  
-  .modal-content {
-    border-radius: 8px;
-  }
 }
 
 @media (max-width: 576px) {
@@ -436,10 +423,6 @@ h3, h4, h5 {
     font-size: 0.8rem;
     padding: 5px 6px;
     width: 100%; /* En pantallas muy pequeñas, volver a una sola columna */
-  }
-
-  .modal-dialog {
-    margin: 0.25rem;
   }
 }
 

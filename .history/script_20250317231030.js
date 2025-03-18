@@ -25,7 +25,7 @@ const pdfInfo = {
     },
     segunda: {
         title: 'Lista de aprobados de examen de matemática - Recuperatorio',
-        date: 'Segunda fecha (14/03)'
+        date: 'Segunda fecha'
     }
 };
 
@@ -37,20 +37,11 @@ function updatePdfInfo(selection) {
     const info = pdfInfo[selection];
     document.getElementById('header-title').textContent = info.title;
     
-    // Verificar primero si los elementos existen antes de manipularlos
-    // Esto arregla el error: Cannot read properties of null (reading 'classList')
-    const tabPrimera = document.getElementById('primera-tab');
-    const tabSegunda = document.getElementById('segunda-tab');
-    
-    if (tabPrimera && tabSegunda) {
-        if (selection === 'primera') {
-            tabPrimera.classList.add('active');
-            tabSegunda.classList.remove('active');
-        } else {
-            tabPrimera.classList.remove('active');
-            tabSegunda.classList.add('active');
-        }
-    }
+    // Ocultar/mostrar información según el PDF seleccionado
+    document.querySelectorAll('.pdf-info-content').forEach(el => {
+        el.classList.remove('active');
+    });
+    document.getElementById(`${selection}-info`).classList.add('active');
 }
 
 // Cargar PDF
@@ -236,27 +227,6 @@ window.addEventListener('load', () => {
             }
         });
     });
-    
-    // Configurar evento para alternar visibilidad del PDF
-    const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    if (togglePdfBtn) {
-        togglePdfBtn.addEventListener('click', function() {
-            const pdfContainer = document.querySelector('.pdf-container');
-            const pdfIcon = this.querySelector('i');
-            
-            if (document.body.classList.contains('pdf-hidden')) {
-                document.body.classList.remove('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye');
-                pdfIcon.classList.add('bi-eye-slash');
-                this.setAttribute('title', 'Ocultar PDF');
-            } else {
-                document.body.classList.add('pdf-hidden');
-                pdfIcon.classList.remove('bi-eye-slash');
-                pdfIcon.classList.add('bi-eye');
-                this.setAttribute('title', 'Mostrar PDF');
-            }
-        });
-    }
 });
 
 // Función para procesar el texto y extraer los datos estructurados
@@ -282,14 +252,13 @@ function processTextContent(text, pdfKey) {
         if (line.includes('Apellido y Nombre') || 
             line.includes('Nro de DNI') || 
             line.startsWith('Alumnos que') ||
-            line.includes('Exámen de Matemática') ||
-            line.includes('Condición') ||
-            line.length < 10) continue;
+            line.length < 10 ||
+            line.includes('Exámen de Matemática')) continue;
         
         console.log('Procesando línea:', line);
         
         // Diferentes patrones según el documento
-        let match = null;
+        let match;
         
         // Patrón para el primer PDF - alumnos aprobados
         if (pdfKey === 'primera') {
@@ -310,9 +279,8 @@ function processTextContent(text, pdfKey) {
         } 
         // Patrón para el segundo PDF - formato diferente
         else if (pdfKey === 'segunda') {
-            // Intentar capturar el patrón específico del segundo PDF
-            // Patrón para líneas como: "1 Acosta, Jonas Imanol 45762439 San Pedro APROBADO"
-            match = line.match(/^(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{8})\s+(.*?)APROBADO$/);
+            // Intentar capturar el formato del segundo PDF
+            match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{8})\s+(.*?)APROBADO/);
             
             if (match) {
                 const result = {
@@ -328,10 +296,10 @@ function processTextContent(text, pdfKey) {
             }
         }
         
-        // Patrón alternativo para casos donde hay problemas con el formato
+        // Patrón alternativo para casos donde el formato puede variar ligeramente
         if (!match) {
-            // Un patrón más flexible para detectar DNI de 8 dígitos y palabras como APROBADO/Aprobado
-            match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{7,8})\s+(.*?)(APROBADO|Aprobado)/i);
+            // Intentar un patrón más general para capturar aprobados
+            match = line.match(/(\d+)\s+([\wáéíóúÁÉÍÓÚñÑ\s,\.]+)\s+(\d{8})\s+(.*?)(APROBADO|Aprobado)/i);
             
             if (match) {
                 const result = {
@@ -369,7 +337,7 @@ function processTextContent(text, pdfKey) {
 
 // Función para actualizar la tabla de resultados
 function updateResultsTable(results) {
-    const tableElement = document.getElementById('results-table-container');
+    const tableContainer = document.getElementById('results-table-container');
     const tableBody = document.getElementById('results-table-body');
     const numeroColumn = document.querySelector('.numero-column');
     tableBody.innerHTML = '';
@@ -379,7 +347,7 @@ function updateResultsTable(results) {
         if (numeroColumn) numeroColumn.style.display = 'none';
         
         // Mostrar mensaje de "No aprobado o no registrado" en la tabla
-        tableElement.style.display = 'table';
+        tableContainer.style.display = 'block';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td colspan="5" class="text-center">
@@ -427,7 +395,7 @@ function updateResultsTable(results) {
         tableBody.appendChild(row);
     });
     
-    tableElement.style.display = 'table';
+    tableContainer.style.display = 'block';
 }
 
 // Función para buscar texto en el PDF
@@ -450,23 +418,9 @@ async function searchPDF(searchTerm) {
     document.getElementById('search-status').textContent = 'Buscando...';
     document.getElementById('search-status').classList.add('searching');
     
-    // Cuando hay una búsqueda activa, podemos ocultar automáticamente el PDF si hay resultados
-    // Este comportamiento es opcional, se puede comentar si no se desea
-    // document.body.classList.add('pdf-hidden');
-    // const togglePdfBtn = document.getElementById('toggle-pdf-view');
-    // if (togglePdfBtn) {
-    //     const pdfIcon = togglePdfBtn.querySelector('i');
-    //     pdfIcon.classList.remove('bi-eye-slash');
-    //     pdfIcon.classList.add('bi-eye');
-    //     togglePdfBtn.setAttribute('title', 'Mostrar PDF');
-    // }
-    
     try {
         let allResults = [];
-        // Verificar si el checkbox existe antes de leer su propiedad
-        // Esto arregla el error: Cannot read properties of null (reading 'checked')
-        const searchBothCheckbox = document.getElementById('search-both-pdfs');
-        const searchInBoth = searchBothCheckbox ? searchBothCheckbox.checked : true;
+        const searchInBoth = document.getElementById('search-both-pdfs').checked;
         
         // Si se busca en ambos documentos o solo en el actual
         const pdfKeysToSearch = searchInBoth ? ['primera', 'segunda'] : [currentPdfSelection];
@@ -526,7 +480,7 @@ async function searchPDF(searchTerm) {
                     const searchTermLower = searchTerm.toLowerCase();
                     return result.nombreApellido.toLowerCase().includes(searchTermLower) ||
                            result.dni.includes(searchTerm) ||
-                           (result.localidad && result.localidad.toLowerCase().includes(searchTermLower));
+                           result.localidad.toLowerCase().includes(searchTermLower);
                 });
                 
                 // Añadir información del PDF donde se encontró

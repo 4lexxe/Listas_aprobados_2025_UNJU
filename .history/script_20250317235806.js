@@ -369,7 +369,7 @@ function processTextContent(text, pdfKey) {
 
 // Función para actualizar la tabla de resultados
 function updateResultsTable(results) {
-    const tableElement = document.getElementById('results-table-container');
+    const tableContainer = document.getElementById('results-table-container');
     const tableBody = document.getElementById('results-table-body');
     const numeroColumn = document.querySelector('.numero-column');
     tableBody.innerHTML = '';
@@ -379,7 +379,7 @@ function updateResultsTable(results) {
         if (numeroColumn) numeroColumn.style.display = 'none';
         
         // Mostrar mensaje de "No aprobado o no registrado" en la tabla
-        tableElement.style.display = 'table';
+        tableContainer.style.display = 'block';
         const row = document.createElement('tr');
         row.innerHTML = `
             <td colspan="5" class="text-center">
@@ -427,7 +427,7 @@ function updateResultsTable(results) {
         tableBody.appendChild(row);
     });
     
-    tableElement.style.display = 'table';
+    tableContainer.style.display = 'block';
 }
 
 // Función para buscar texto en el PDF
